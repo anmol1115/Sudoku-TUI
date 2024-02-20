@@ -12,7 +12,7 @@ mod app;
 mod ui;
 
 use ui::ui;
-use app::{App, CurrentScreen};
+use app::{App, CurrentScreen, MenuSelection};
 
 fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> Result<()> {
     loop {
@@ -27,8 +27,27 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> 
                 CurrentScreen::Menu => match key.code {
                     KeyCode::Esc => return Ok(()),
                     KeyCode::Tab => app.toggle_menu_selection(),
+                    KeyCode::Enter => match app.menu_selection {
+                        MenuSelection::ChooseDifficulty => {
+                            app.current_screen = CurrentScreen::DifficultySelect
+                        },
+                        MenuSelection::RandomDifficulty => {
+                            app.set_pair(None, true)?;
+                        }
+                    }
                     _ => ()
                 },
+                CurrentScreen::DifficultySelect => match key.code {
+                    KeyCode::Esc => app.current_screen = CurrentScreen::Menu,
+                    KeyCode::Up => app.decrement_difficulty(),
+                    KeyCode::Down => app.increment_difficulty(),
+                    KeyCode::Enter => app.select_difficulty()?,
+                    _ => ()
+                },
+                CurrentScreen::Playground => match key.code {
+                    KeyCode::Esc => app.current_screen = CurrentScreen::Menu,
+                    _ => ()
+                }
                 _ => ()
             }
         }
@@ -41,7 +60,7 @@ fn main() -> Result<()> {
     stdout().execute(EnterAlternateScreen)?;
     enable_raw_mode()?;
 
-    let mut app = App::new();
+    let mut app = App::new()?;
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
     terminal.clear()?;
 

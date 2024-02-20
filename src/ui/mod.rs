@@ -7,6 +7,7 @@ use ratatui::{
 };
 
 mod menu;
+mod difficulty_select;
 use crate::app;
 
 pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
@@ -45,13 +46,14 @@ pub fn ui(frame: &mut Frame, app: &mut app::App) {
 
     let title = Paragraph::new(Span::styled(
         "Sudoku in CLI",
-        Style::default().fg(Color::Green)
+        Style::default().fg(Color::White)
     )).block(title_block);
 
     frame.render_widget(title, sections[0]);
 
     match app.current_screen {
         app::CurrentScreen::Menu => menu::display(frame, sections[1], sections[2], app),
+        app::CurrentScreen::DifficultySelect => difficulty_select::display(frame, sections[1], sections[2], app),
         _ => ()
     };
 }
