@@ -10,6 +10,7 @@ mod util;
 mod menu;
 mod difficulty_select;
 mod playground;
+mod exiting;
 use crate::app;
 
 pub fn ui(frame: &mut Frame, app: &mut app::App) {
@@ -37,6 +38,6 @@ pub fn ui(frame: &mut Frame, app: &mut app::App) {
         app::CurrentScreen::Menu => menu::display(frame, sections[1], sections[2], app),
         app::CurrentScreen::DifficultySelect => difficulty_select::display(frame, sections[1], sections[2], app),
         app::CurrentScreen::Playground => playground::display(frame, sections[1], sections[2], app),
-        _ => ()
+        app::CurrentScreen::Exiting => exiting::display(frame, sections[1], sections[2])
     };
 }

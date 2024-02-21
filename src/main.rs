@@ -25,7 +25,7 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> 
 
             match app.current_screen {
                 CurrentScreen::Menu => match key.code {
-                    KeyCode::Esc => return Ok(()),
+                    KeyCode::Esc => app.current_screen = CurrentScreen::Exiting,
                     KeyCode::Tab => app.toggle_menu_selection(),
                     KeyCode::Enter => match app.menu_selection {
                         MenuSelection::ChooseDifficulty => {
@@ -57,8 +57,12 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> 
                         _ => ()
                     }
                     _ => ()
+                },
+                CurrentScreen::Exiting => match key.code {
+                    KeyCode::Char('y') => return Ok(()),
+                    KeyCode::Char('n') => app.current_screen = CurrentScreen::Menu,
+                    _ => ()
                 }
-                _ => ()
             }
         }
     }
