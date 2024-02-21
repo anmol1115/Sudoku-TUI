@@ -1,13 +1,13 @@
 use ratatui::{
     Frame,
-    layout::{Rect, Layout, Direction, Constraint},
-    widgets::{Paragraph, Block, Borders, ListItem, List},
+    layout::Rect,
+    widgets::{ListItem, List},
     text::{Span, Line},
-    style::{Style, Color, Stylize}
+    style::{Style, Color}
 };
 
 use crate::app;
-use super::centered_rect;
+use super::util;
 
 pub fn display(frame: &mut Frame, body_section: Rect, footer_section: Rect, app: &mut app::App) {
     body_display(frame, body_section, app);
@@ -15,7 +15,7 @@ pub fn display(frame: &mut Frame, body_section: Rect, footer_section: Rect, app:
 }
 
 fn body_display(frame: &mut Frame, body_section: Rect, app: &mut app::App) {
-    let body_section = centered_rect(90, 60, body_section);
+    let body_section = util::centered_rect(90, 60, body_section);
     let mut list_items = Vec::<ListItem>::new();
 
     for file in &app.all_files {
@@ -33,24 +33,11 @@ fn body_display(frame: &mut Frame, body_section: Rect, app: &mut app::App) {
 }
 
 fn footer_display(frame: &mut Frame, footer_section: Rect) {
-    let navigation_text = Paragraph::new(Span::styled(
+    util::footer_display(
+        frame,
+        footer_section,
         "Difficulty Select",
-        Style::default().fg(Color::Black)
-    )).block(Block::default().borders(Borders::ALL).bg(Color::Gray)).fg(Color::Black);
-
-    let hint_text = Paragraph::new(Span::styled(
         "(Up/Down) to navigate / (Esc) to return / (Enter) to select",
-        Style::default().fg(Color::Black)
-    )).block(Block::default().borders(Borders::ALL).bg(Color::Gray)).fg(Color::Black);
-
-    let footer_chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(30),
-            Constraint::Percentage(70)
-        ])
-        .split(footer_section);
-
-    frame.render_widget(navigation_text, footer_chunks[0]);
-    frame.render_widget(hint_text, footer_chunks[1]);
+        (30, 70)
+    );
 }

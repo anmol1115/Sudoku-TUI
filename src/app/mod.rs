@@ -1,4 +1,5 @@
 use std::fs;
+use std::collections::HashSet;
 
 use crate::errors::Errors;
 mod problem_select;
@@ -17,8 +18,12 @@ pub enum MenuSelection {
 
 pub struct App {
     pub current_screen: CurrentScreen,
-    problem: Option<String>,
+    pub problem: Vec<Vec<char>>,
     solution: Option<String>,
+    playable_pos: HashSet<(usize, usize)>,
+    pub selected_row: usize,
+    pub selected_col: usize,
+    pub invalid_entries: HashSet<(usize, usize)>,
     pub selected_file: usize,
     pub all_files: Vec<String>,
     pub menu_selection: MenuSelection
@@ -28,8 +33,12 @@ impl App {
     pub fn new() -> Result<App, Errors<'static>> {
         Ok(App {
             current_screen: CurrentScreen::Menu,
-            problem: None,
+            problem: vec![],
             solution: None,
+            playable_pos: HashSet::new(),
+            selected_col: 0,
+            selected_row: 0,
+            invalid_entries: HashSet::new(),
             selected_file: 0,
             all_files: Self::list_problem_files()?,
             menu_selection: MenuSelection::ChooseDifficulty
@@ -45,8 +54,21 @@ impl App {
 
     pub fn set_pair(&mut self, difficulty: Option<usize>, random: bool) -> Result<(), Errors> {
         let (problem, solution) = problem_select::select_pair(difficulty, random)?;
-        self.problem = Some(problem);
         self.solution = Some(solution);
+        self.problem = problem
+            .chars()
+            .collect::<Vec<char>>()
+            .chunks(9)
+            .map(|chunk| chunk.to_vec())
+            .collect();
+
+        for r in 0..9 {
+            for c in 0..9 {
+                if self.problem[r][c] == '.' {
+                    self.playable_pos.insert((r, c));
+                }
+            }
+        }
 
         self.current_screen = CurrentScreen::Playground;
 
@@ -97,5 +119,62 @@ impl App {
         }
 
         Ok(())
+    }
+
+    pub fn move_cursor(&mut self, row: i32, column: i32) {
+        match row {
+            1 => {
+                let new_row = self.selected_row + 1;
+                if new_row == 9 {
+                    self.selected_row = 0;
+                    return
+                }
+                self.selected_row = new_row;
+            },
+            -1 => {
+                if self.selected_row == 0 {
+                    self.selected_row = 9;
+                }
+                self.selected_row -= 1;
+            },
+            _ => ()
+        }
+        match column {
+            1 => {
+                let new_col = self.selected_col + 1;
+                if new_col == 9 {
+                    self.selected_col = 0;
+                    return
+                }
+                self.selected_col = new_col;
+            },
+            -1 => {
+                if self.selected_col == 0 {
+                    self.selected_col = 9;
+                }
+                self.selected_col -= 1;
+            },
+            _ => ()
+        }
+    }
+
+    pub fn set_value(&mut self, value: char) {
+        if self.playable_pos.contains(&(self.selected_row, self.selected_col)) {
+            self.problem[self.selected_row][self.selected_col] = value;
+        }
+    }
+
+    pub fn validate(&mut self) {
+        for r in 0..9 {
+            for c in 0..9 {
+                if self.problem[r][c] != '.' && self.problem[r][c] != self.solution.as_ref().unwrap().as_bytes()[r * 9+ c] as char {
+                    self.invalid_entries.insert((r, c));
+                }
+            }
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.invalid_entries.clear();
     }
 }

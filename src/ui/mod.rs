@@ -3,32 +3,14 @@ use ratatui::{
     text::Span,
     widgets::{Paragraph, Block, Borders},
     style::{Color, Style},
-    layout::{Direction, Constraint, Layout, Rect}
+    layout::{Direction, Constraint, Layout}
 };
 
+mod util;
 mod menu;
 mod difficulty_select;
+mod playground;
 use crate::app;
-
-pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-    let v_center = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage((100-percent_y) / 2),
-            Constraint::Percentage(percent_y),
-            Constraint::Percentage((100-percent_y) / 2)
-        ])
-        .split(r);
-
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage((100-percent_x)/2),
-            Constraint::Percentage(percent_x),
-            Constraint::Percentage((100-percent_x)/2)
-        ])
-        .split(v_center[1])[1]
-}
 
 pub fn ui(frame: &mut Frame, app: &mut app::App) {
     let sections = Layout::default()
@@ -54,6 +36,7 @@ pub fn ui(frame: &mut Frame, app: &mut app::App) {
     match app.current_screen {
         app::CurrentScreen::Menu => menu::display(frame, sections[1], sections[2], app),
         app::CurrentScreen::DifficultySelect => difficulty_select::display(frame, sections[1], sections[2], app),
+        app::CurrentScreen::Playground => playground::display(frame, sections[1], sections[2], app),
         _ => ()
     };
 }

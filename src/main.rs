@@ -46,6 +46,16 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> 
                 },
                 CurrentScreen::Playground => match key.code {
                     KeyCode::Esc => app.current_screen = CurrentScreen::Menu,
+                    KeyCode::Up => app.move_cursor(-1, 0),
+                    KeyCode::Down => app.move_cursor(1, 0),
+                    KeyCode::Left => app.move_cursor(0, -1),
+                    KeyCode::Right => app.move_cursor(0, 1),
+                    KeyCode::Char(character) => match character {
+                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => app.set_value(character),
+                        'v' => app.validate(),
+                        'r' => app.reset(),
+                        _ => ()
+                    }
                     _ => ()
                 }
                 _ => ()
