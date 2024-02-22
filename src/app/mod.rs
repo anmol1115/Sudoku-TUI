@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashSet;
+use std::fs;
 
 use crate::errors::Errors;
 mod problem_select;
@@ -8,25 +8,26 @@ pub enum CurrentScreen {
     Menu,
     DifficultySelect,
     Playground,
-    Exiting
+    Exiting,
 }
 
 pub enum MenuSelection {
     ChooseDifficulty,
-    RandomDifficulty
+    RandomDifficulty,
 }
 
 pub struct App {
     pub current_screen: CurrentScreen,
     pub problem: Vec<Vec<char>>,
     solution: Option<String>,
-    playable_pos: HashSet<(usize, usize)>,
+    pub playable_pos: HashSet<(usize, usize)>,
     pub selected_row: usize,
     pub selected_col: usize,
     pub invalid_entries: HashSet<(usize, usize)>,
+    pub valid_entries: HashSet<(usize, usize)>,
     pub selected_file: usize,
     pub all_files: Vec<String>,
-    pub menu_selection: MenuSelection
+    pub menu_selection: MenuSelection,
 }
 
 impl App {
@@ -39,16 +40,21 @@ impl App {
             selected_col: 0,
             selected_row: 0,
             invalid_entries: HashSet::new(),
+            valid_entries: HashSet::new(),
             selected_file: 0,
             all_files: Self::list_problem_files()?,
-            menu_selection: MenuSelection::ChooseDifficulty
+            menu_selection: MenuSelection::ChooseDifficulty,
         })
     }
 
     pub fn toggle_menu_selection(&mut self) {
         match &self.menu_selection {
-            MenuSelection::ChooseDifficulty => {self.menu_selection = MenuSelection::RandomDifficulty},
-            MenuSelection::RandomDifficulty => {self.menu_selection = MenuSelection::ChooseDifficulty}
+            MenuSelection::ChooseDifficulty => {
+                self.menu_selection = MenuSelection::RandomDifficulty
+            }
+            MenuSelection::RandomDifficulty => {
+                self.menu_selection = MenuSelection::ChooseDifficulty
+            }
         }
     }
 
@@ -80,7 +86,11 @@ impl App {
 
         let files = match fs::read_dir("./problems") {
             Ok(files) => files,
-            Err(_) => return Err(Errors::DirectoryListError("Unable to list problems directory"))
+            Err(_) => {
+                return Err(Errors::DirectoryListError(
+                    "Unable to list problems directory",
+                ))
+            }
         };
 
         for file in files {
@@ -109,7 +119,6 @@ impl App {
 
         let new_idx = self.selected_file - 1;
         self.selected_file = new_idx;
-
     }
 
     pub fn select_difficulty(&mut self) -> Result<(), Errors> {
@@ -127,39 +136,42 @@ impl App {
                 let new_row = self.selected_row + 1;
                 if new_row == 9 {
                     self.selected_row = 0;
-                    return
+                    return;
                 }
                 self.selected_row = new_row;
-            },
+            }
             -1 => {
                 if self.selected_row == 0 {
                     self.selected_row = 9;
                 }
                 self.selected_row -= 1;
-            },
-            _ => ()
+            }
+            _ => (),
         }
         match column {
             1 => {
                 let new_col = self.selected_col + 1;
                 if new_col == 9 {
                     self.selected_col = 0;
-                    return
+                    return;
                 }
                 self.selected_col = new_col;
-            },
+            }
             -1 => {
                 if self.selected_col == 0 {
                     self.selected_col = 9;
                 }
                 self.selected_col -= 1;
-            },
-            _ => ()
+            }
+            _ => (),
         }
     }
 
     pub fn set_value(&mut self, value: char) {
-        if self.playable_pos.contains(&(self.selected_row, self.selected_col)) {
+        if self
+            .playable_pos
+            .contains(&(self.selected_row, self.selected_col))
+        {
             self.problem[self.selected_row][self.selected_col] = value;
         }
     }
@@ -167,8 +179,14 @@ impl App {
     pub fn validate(&mut self) {
         for r in 0..9 {
             for c in 0..9 {
-                if self.problem[r][c] != '.' && self.problem[r][c] != self.solution.as_ref().unwrap().as_bytes()[r * 9+ c] as char {
-                    self.invalid_entries.insert((r, c));
+                if self.problem[r][c] != '.' && self.playable_pos.contains(&(r, c)) {
+                    if self.problem[r][c]
+                        != self.solution.as_ref().unwrap().as_bytes()[r * 9 + c] as char
+                    {
+                        self.invalid_entries.insert((r, c));
+                    } else {
+                        self.valid_entries.insert((r, c));
+                    }
                 }
             }
         }
@@ -176,5 +194,6 @@ impl App {
 
     pub fn reset(&mut self) {
         self.invalid_entries.clear();
+        self.valid_entries.clear();
     }
 }

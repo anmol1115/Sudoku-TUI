@@ -1,12 +1,12 @@
 use ratatui::{
+    layout::{Constraint, Rect},
+    style::{Color, Style},
+    widgets::{Cell, Row, Table},
     Frame,
-    layout::{Rect, Constraint},
-    widgets::{Row, Table, Cell},
-    style::{Style, Color}
 };
 
-use crate::app;
 use super::util;
+use crate::app;
 
 pub fn display(frame: &mut Frame, body_section: Rect, footer_section: Rect, app: &mut app::App) {
     body_display(frame, body_section, app);
@@ -16,11 +16,13 @@ pub fn display(frame: &mut Frame, body_section: Rect, footer_section: Rect, app:
 fn body_display(frame: &mut Frame, body_section: Rect, app: &mut app::App) {
     let body_section = util::centered_rect(70, 60, body_section);
 
-    let widths = vec![Constraint::Length(10);9];
+    let widths = vec![Constraint::Length(10); 9];
     let mut rows = Vec::new();
 
-    let active_style = Style::default().bg(Color::White).fg(Color::Black);
+    let active_style = Style::default().bg(Color::Gray).fg(Color::Black);
     let invalid_style = Style::default().fg(Color::Red);
+    let valid_style = Style::default().fg(Color::Green);
+    let exisiting_style = Style::default().fg(Color::Yellow);
 
     for r in 0..9 {
         let mut column = Vec::new();
@@ -28,6 +30,12 @@ fn body_display(frame: &mut Frame, body_section: Rect, app: &mut app::App) {
             let mut entry = Cell::from(app.problem[r][c].to_string().clone());
             if app.invalid_entries.contains(&(r, c)) {
                 entry = entry.clone().style(invalid_style);
+            } else if app.valid_entries.contains(&(r, c)) {
+                entry = entry.clone().style(valid_style);
+            }
+
+            if !app.playable_pos.contains(&(r, c)) {
+                entry = entry.clone().style(exisiting_style);
             }
 
             if r == app.selected_row && c == app.selected_col {
