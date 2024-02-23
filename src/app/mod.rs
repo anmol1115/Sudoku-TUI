@@ -1,14 +1,30 @@
 use std::collections::HashSet;
 use std::fs;
 
-use crate::errors::Errors;
 mod problem_select;
+use crate::errors::Errors;
 
 pub enum CurrentScreen {
     Menu,
     DifficultySelect,
     Playground,
     Exiting,
+    SolverSelect,
+    Solver,
+}
+
+pub enum CurrentSolver {
+    Backtrack(String),
+    Other,
+}
+
+impl CurrentSolver {
+    pub fn clone_value(&self) -> String {
+        match self {
+            CurrentSolver::Backtrack(v) => v.clone(),
+            _ => String::new(),
+        }
+    }
 }
 
 pub enum MenuSelection {
@@ -20,6 +36,8 @@ pub struct App {
     pub current_screen: CurrentScreen,
     pub problem: Vec<Vec<char>>,
     solution: Option<String>,
+    pub solvers: Vec<CurrentSolver>,
+    pub selected_solver: usize,
     pub playable_pos: HashSet<(usize, usize)>,
     pub selected_row: usize,
     pub selected_col: usize,
@@ -36,6 +54,8 @@ impl App {
             current_screen: CurrentScreen::Menu,
             problem: vec![],
             solution: None,
+            solvers: vec![CurrentSolver::Backtrack("Backtrack".to_string())],
+            selected_solver: 0,
             playable_pos: HashSet::new(),
             selected_col: 0,
             selected_row: 0,
@@ -193,7 +213,28 @@ impl App {
     }
 
     pub fn reset(&mut self) {
+        for &(r, c) in &self.playable_pos {
+            self.problem[r][c] = '.'
+        }
         self.invalid_entries.clear();
         self.valid_entries.clear();
+    }
+
+    pub fn increment_solver(&mut self) {
+        let mut new_idx = self.selected_solver + 1;
+        if new_idx == self.solvers.len() {
+            new_idx = 0;
+        }
+
+        self.selected_solver = new_idx;
+    }
+
+    pub fn decrement_solver(&mut self) {
+        let mut new_idx = self.selected_solver;
+        if new_idx == 0 {
+            new_idx = self.solvers.len();
+        }
+
+        self.selected_solver = new_idx - 1;
     }
 }
