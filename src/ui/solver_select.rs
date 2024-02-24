@@ -21,7 +21,7 @@ fn body_display(frame: &mut Frame, body_section: Rect, app: &mut app::App) {
     for solver in &app.solvers {
         list_items.push(ListItem::new(Line::from(Span::styled(
             solver.clone_value(),
-            Style::default(),
+            Style::default()
         ))))
     }
 

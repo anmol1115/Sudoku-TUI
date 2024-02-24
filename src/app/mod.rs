@@ -15,14 +15,14 @@ pub enum CurrentScreen {
 
 pub enum CurrentSolver {
     Backtrack(String),
-    Other,
+    Constraintbacktrack(String),
 }
 
 impl CurrentSolver {
     pub fn clone_value(&self) -> String {
         match self {
             CurrentSolver::Backtrack(v) => v.clone(),
-            _ => String::new(),
+            CurrentSolver::Constraintbacktrack(v) => v.clone()
         }
     }
 }
@@ -54,7 +54,10 @@ impl App {
             current_screen: CurrentScreen::Menu,
             problem: vec![],
             solution: None,
-            solvers: vec![CurrentSolver::Backtrack("Backtrack".to_string())],
+            solvers: vec![
+                CurrentSolver::Backtrack("Backtrack".to_string()),
+                CurrentSolver::Constraintbacktrack("Constraint_Backtrack".to_string()),
+            ],
             selected_solver: 0,
             playable_pos: HashSet::new(),
             selected_col: 0,

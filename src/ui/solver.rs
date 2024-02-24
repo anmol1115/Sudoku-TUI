@@ -26,7 +26,7 @@ fn body_display(frame: &mut Frame, body_section: Rect, app: &mut app::App) {
     match app.solvers.get(app.selected_solver) {
         Some(solver_variant) => match solver_variant {
             app::CurrentSolver::Backtrack(_) => solver::backtrack::solve(&mut app.problem),
-            _ => false,
+            app::CurrentSolver::Constraintbacktrack(_) => solver::constraint_backtrack::solve(&mut app.problem)
         },
         None => false,
     };
