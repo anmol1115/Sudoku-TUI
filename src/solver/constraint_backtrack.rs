@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::possible_sol;
+use super::available_entries;
 use crate::solver::backtrack;
 
 pub fn solve(problem: &mut Vec<Vec<char>>) -> bool {
@@ -8,24 +8,6 @@ pub fn solve(problem: &mut Vec<Vec<char>>) -> bool {
     solve_hidden_singles(problem);
 
     backtrack::solve(problem)
-}
-
-fn available_entries(problem: &Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<char>> {
-    let mut res = HashMap::new();
-    for r in 0..9 {
-        for c in 0..9 {
-            if problem[r][c] == '.' {
-                for i in 1..=9 {
-                    let i = std::char::from_digit(i as u32, 10).expect("");
-                    if possible_sol(r, c, i, problem) {
-                        let values = res.entry((r, c)).or_insert(vec![]);
-                        values.push(i);
-                    }
-                }
-            }
-        }
-    }
-    res
 }
 
 fn solve_naked_singles(problem: &mut Vec<Vec<char>>) {
