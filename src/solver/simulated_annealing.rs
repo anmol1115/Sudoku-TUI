@@ -2,31 +2,32 @@ use rand::Rng;
 use std::f64::consts;
 use std::collections::HashSet;
 
-pub fn solve(problem: &mut Vec<Vec<char>>) {
-    simulated_annealing(problem, 0.99);
+pub fn solve(problem: &mut Vec<Vec<char>>) -> bool {
+    simulated_annealing(problem, 0.999);
     println!("{:?}", calculate_energy(problem));
+
+    true
 }
 
-fn simulated_annealing(problem: &mut Vec<Vec<char>>, cooling_rate: f64) -> bool {
+fn simulated_annealing(problem: &mut Vec<Vec<char>>, cooling_rate: f64) {
     let available = available_entries(problem);
     fill_random(problem);
     let mut curr_energy = calculate_energy(problem);
 
-    let mut temp = 10000.0;
-    let final_temp = 0.0001;
+    let mut temp = 120.0;
+    let final_temp = 0.001;
 
-    while temp > final_temp {
-        // println!("{:?}, {:?}", curr_energy, temp);
+    while temp > final_temp || curr_energy == 0 {
         let new_problem = swap_neighbors(problem, &available);
         let new_energy = calculate_energy(&new_problem);
 
-        let energy_diff = curr_energy - new_energy;
+        let energy_diff = new_energy - curr_energy;
         if energy_diff <= 0 {
             *problem = new_problem;
             curr_energy = new_energy;
         } else {
-            let probability = consts::E.powf(-1.0 * (new_energy as f64)/temp);
-            if random_uniform() > probability {
+            let probability = consts::E.powf(-1.0 * (energy_diff as f64)/temp*cooling_rate);
+            if random_uniform() < probability {
                 *problem = new_problem;
                 curr_energy = new_energy;
             }
@@ -34,8 +35,6 @@ fn simulated_annealing(problem: &mut Vec<Vec<char>>, cooling_rate: f64) -> bool 
 
         temp = temp * cooling_rate;
     }
-
-    true
 }
 
 fn swap_neighbors(problem: &Vec<Vec<char>>, map: &HashSet<(usize, usize)>) -> Vec<Vec<char>> {
@@ -195,6 +194,9 @@ mod tests {
             .map(|chunk| chunk.to_vec())
             .collect();
 
-        solve(&mut problem)
+        solve(&mut problem);
+        // for line in problem {
+        //     println!("{:?}", line);
+        // }
     }
 }
